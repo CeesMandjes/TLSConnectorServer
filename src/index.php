@@ -5,19 +5,21 @@ $nonceFile = "nonce.txt";
 $googleCertificateFile = "GoogleCertificate.pem";
 // Expected parameters value for application for SafetyNet validation
 $APKpackageNameExpected = "com.example.tlsconnector";
-$APKDigestSha256Expected = "56fb3dc8f1e859f4a0fa3b6db9fffd367ab405cfa3fb0c40993de6cb6da3908e";
 $APKCertificateDigestSha256Expected = "11a4fc5754ded4c10144a02b974998c9b5da7c0b1d06220517b6f78a528d97eb";
  
 // Entry point of the application
 $request = str_replace("/index.php", "", $_SERVER["REQUEST_URI"]);
  
 // First step for SafetyNet check is to get a nonce
-if (0 === strpos($request, "/api/getnonce")) {
+if (0 === strpos($request, "/api/getnonce")) 
+{
     // Get signed attestestion in JWS format
     $nonce = generateNonce($nonceFile);
     echo $nonce;
 // Second step for SafetyNet check is to validate SafetyNet"s attestation
-} elseif (0 === strpos($request, "/api/validatejws")) {
+} 
+elseif (0 === strpos($request, "/api/validatejws")) 
+{
     // Get signed attestestion in JWS format
     $rawJWS = getJWSRaw();
     if($rawJWS !== null)
@@ -27,7 +29,7 @@ if (0 === strpos($request, "/api/getnonce")) {
         // Verify the signature of the provided attestation
         $isJWSSignatureValid = verifyJWSIntegrity($rawJWS, $googleCertificateFile);
         // Validate the payload of the provided attestion
-        $isJWSPayloadValid = validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKDigestSha256Expected, $APKCertificateDigestSha256Expected);
+        $isJWSPayloadValid = validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected);
         //Final result
         if ($isJWSSignatureValid === true && $isJWSPayloadValid === true) {
             echo "Succes: Android Safetynet check passed.";
@@ -36,7 +38,9 @@ if (0 === strpos($request, "/api/getnonce")) {
         }
     }
 // Invalid request
-} else {
+} 
+else 
+{
     echo "Error: Invalid request.";
 }
  
@@ -67,16 +71,18 @@ function generateNonce($fileName)
 */
 function getJWSRaw()
 {
-    if (!isset($_POST["jws"]) || $_POST["jws"] == "") {
-        echo "Error: JWS object not sent to server via a POST request.";
+    if (!isset($_POST["jws"]) || $_POST["jws"] == "") 
+    {
+        echo "Error: JWS object not sent to server via a POST request. ";
         return null;
     }
     // Check whether the provided attestion is in JWS format
     $rawJWS = $_POST["jws"];
-    if (count(explode(".", $rawJWS)) === 3) {
+    if (count(explode(".", $rawJWS)) === 3) 
+    {
         return $_POST["jws"];
     }
-    echo "Error: Provided attestion is not in JWS format.";
+    echo "Error: Provided attestion is not in JWS format. ";
     return null;
 }
  
@@ -96,7 +102,7 @@ function verifyJWSIntegrity($rawJWS, $googleCertificateFile)
  
     if (strtolower($header["alg"]) === "none")
     {
-        echo "Error: alg is not defined in provided JWS";
+        echo "Error: alg is not defined in provided JWS. ";
         return false;
     }
     $certJWS = getCertificateInPemFormat($header);
@@ -107,8 +113,7 @@ function verifyJWSIntegrity($rawJWS, $googleCertificateFile)
     {
  
         return true;
-    }
-   
+    }   
     return false;
 }
  
@@ -137,7 +142,9 @@ function verifyCertificate($certJWS, $googleCertificateFile)
 {
     openssl_x509_export_to_file($certJWS, "jwsCertificate.pem");
     exec("openssl verify -CAfile ". $googleCertificateFile ." jwsCertificate.pem", $output, $return_var);
-    if ($return_var === 0) {
+
+    if ($return_var === 0) 
+    {
         return true;
     }
     return false;
@@ -161,7 +168,7 @@ function verifyJWSSignature($headerJWSEncoded, $payloadEncoded, $signature, $cer
 }
 
 /**
-* Validates SafetyNet"s signed attestion payload by the given expected values.
+* Validates SafetyNet"s signed attestion payload by the given expected values. When it did not pass the SafetyNet check, it prints Google's given advice.
 *
 * @param String $rawJWS SafetyNet"s signed attestion
 * @param String $nonceExpected Expected nonce
@@ -171,10 +178,16 @@ function verifyJWSSignature($headerJWSEncoded, $payloadEncoded, $signature, $cer
 *
 * @return Whether SafetyNet"s attestion payload matches the given expected values
 */
-function validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKDigestSha256Expected, $APKCertificateDigestSha256Expected)
+function validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected)
 {
     $payload = getJWSPayload($rawJWS);
-    return validateJWSPayload($payload, $nonceExpected, $APKpackageNameExpected, $APKDigestSha256Expected, $APKCertificateDigestSha256Expected);
+    $result = validateJWSPayload($payload, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected);
+    //When it did not pass the SafetyNet check, it prints Google's given advice
+    if($result === false)
+    {
+        printAdvice($payload);
+    }
+    return $result;
 }
  
 /**
@@ -188,7 +201,7 @@ function getJWSPayload($rawJWS)
 {
     $jwsSplit = explode(".", $rawJWS);
     if (count($jwsSplit) !== 3) {
-        echo "JWS string must contain 3 dot separated component";
+        echo "Error: JWS string must contain 3 dot separated component. ";
         return null;
     }
     $jwsPayload = $jwsSplit[1];
@@ -204,7 +217,7 @@ function getJWSPayload($rawJWS)
 }
  
 /**
-* Gets each parameter from the provided SafetyNet"s signed attestion payload, and compares it with the given expected value.
+* Gets each parameter from the provided SafetyNet's signed attestion payload, and compares it with the given expected value.
 *
 * @param JSON $payloadJWS SafetyNet"s signed attestion payload in JSON format
 * @param String $nonceExpected Expected nonce
@@ -214,28 +227,21 @@ function getJWSPayload($rawJWS)
 *
 * @return Whether each parameter of the provided SafetyNet"s attestion payload matches the given expected values
 */
-function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected, $APKDigestSha256Expected, $APKCertificateDigestSha256Expected)
+function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected)
 {
     $nonceReceived = base64_decode($payloadJWS["nonce"]);
     $APKpackageNameRecieved = $payloadJWS["apkPackageName"];
-    $APKDigestSha256Recieved = bin2hex(base64_decode($payloadJWS["apkDigestSha256"]));
     $APKCertificateDigestSha256Received = bin2hex(base64_decode($payloadJWS["apkCertificateDigestSha256"][0]));   
     $ctsProfileMatchReceieved = $payloadJWS["ctsProfileMatch"] ? "true" : "false";
-    $basicIntegrityReceived = $payloadJWS["ctsProfileMatch"] ? "true" : "false";
- 
-    // When the apk is updated, its signature changes. By writing the last seen signature in a file, it is easier to update its value
-    $newFile= fopen("apkSigFile.txt", "w+");
-    fwrite($newFile, $APKDigestSha256Recieved);
-    fclose($newFile); 
- 
+    $basicIntegrityReceived = $payloadJWS["basicIntegrity"] ? "true" : "false"; 
+
     $nonceIsValid = isInputEqualToExpected($nonceReceived, $nonceExpected, "nonce");
     $APKpackageNameIsValid = isInputEqualToExpected($APKpackageNameRecieved, $APKpackageNameExpected, "APK package name");
-    $APKDigestSha256IsValid = isInputEqualToExpected($APKDigestSha256Recieved, $APKDigestSha256Expected, "APK digest Sha256");
     $APKCertificateDigestSha256IsValid = isInputEqualToExpected($APKCertificateDigestSha256Received, $APKCertificateDigestSha256Expected, "APK certificate digest Sha256");
     $ctsProfileMatchIsValid = isInputEqualToExpected($ctsProfileMatchReceieved, "true", "ctsProfileMatch");
     $basicIntegrityIsValid = isInputEqualToExpected($basicIntegrityReceived, "true", "basicIntegrity"); 
- 
-    if ($nonceIsValid === true && $APKpackageNameIsValid === true && $APKDigestSha256IsValid === true && $APKCertificateDigestSha256IsValid === true &&
+    //Check whether it passess the SafetyNet check
+    if ($nonceIsValid === true && $APKpackageNameIsValid === true && $APKCertificateDigestSha256IsValid === true &&
         $ctsProfileMatchIsValid === true && $basicIntegrityIsValid === true)
     {
         return true;
@@ -254,10 +260,24 @@ function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected
 */
 function isInputEqualToExpected($input, $expected, $inputName)
 {
-    if (strcmp($input, $expected) === 0) {
+    if (strcmp($input, $expected) === 0) 
+    {
         return true;
     }
-    echo "Error: The provided $inputName does not correspond with the expected value (Provided:[$input] Expected:[$expected])";
+    echo "Error: The provided $inputName does not correspond with the expected value (Provided:[$input] Expected:[$expected]). ";
     return false;
+}
+
+/**
+* Checks whether Google gave an advive in the provided SafetyNet's signed attestion payload. If that is the case, this function prints it.
+*
+* @param JSON $payloadJWS SafetyNet"s signed attestion payload in JSON format
+*/
+function printAdvice($payloadJWS)
+{
+    if(array_key_exists("advice", $payloadJWS))
+    {
+        echo "Advice: " . $payloadJWS["advice"] . ". ";
+    }
 }
 ?>
