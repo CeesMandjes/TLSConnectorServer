@@ -1,7 +1,7 @@
 <?php
 // Database file for the Nonce for SafetyNet session
 $nonceFile = "nonce.txt";
-// Path to the CA certificate of SafetyNet"s attestation
+// Path to the CA certificate of SafetyNet's attestation
 $googleCertificateFile = "GoogleCertificate.pem";
 // Expected parameters value for application for SafetyNet validation
 $APKpackageNameExpected = "com.example.tlsconnector";
@@ -16,7 +16,7 @@ if (0 === strpos($request, "/api/getnonce"))
     // Get signed attestestion in JWS format
     $nonce = generateNonce($nonceFile);
     echo $nonce;
-// Second step for SafetyNet check is to validate SafetyNet"s attestation
+// Second step for SafetyNet check is to validate SafetyNet's attestation
 } 
 elseif (0 === strpos($request, "/api/validatejws")) 
 {
@@ -31,9 +31,12 @@ elseif (0 === strpos($request, "/api/validatejws"))
         // Validate the payload of the provided attestion
         $isJWSPayloadValid = validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected);
         //Final result
-        if ($isJWSSignatureValid === true && $isJWSPayloadValid === true) {
+        if ($isJWSSignatureValid === true && $isJWSPayloadValid === true) 
+        {
             echo "Android Safetynet Attestation check passed.";
-        } else {
+        } 
+        else 
+        {
             echo "Android Safetynet Attestation check failed.";
         }
     }
@@ -65,7 +68,7 @@ function generateNonce($fileName)
 }
  
 /**
-* Gets SafetyNet"s signed attestion, in JWS format, from the POST body. The attestion should be given in POST"s parameter "jws".
+* Gets SafetyNet's signed attestion, in JWS format, from the POST body. The attestion should be given in POST's parameter "jws".
 *
 * @return SafetyNet attestion in JWS format
 */
@@ -87,12 +90,12 @@ function getJWSRaw()
 }
  
 /**
-* Verifies SafetyNet"s signed attestion in JWS format. By verifying the signature itself and whether the CA of the certificate used for this signature is Google"s root certificate.
+* Verifies SafetyNet's signed attestion in JWS format. By verifying the signature itself and whether the CA of the certificate used for this signature is Google"s root certificate.
 *
-* @param String $rawJWS SafetyNet"s signed attestion in JWS format
+* @param String $rawJWS SafetyNet's signed attestion in JWS format
 * @param String $googleCertificateFile Path to Google"s root certificate
 *
-* @return Whether the SafetyNet"s attestion signature and the certificate used for this is correct
+* @return Whether the SafetyNet's attestion signature and the certificate used for this is correct
 */
 function verifyJWSIntegrity($rawJWS, $googleCertificateFile)
 {
@@ -118,9 +121,9 @@ function verifyJWSIntegrity($rawJWS, $googleCertificateFile)
 }
  
 /**
-* Extracts the certificate from SafetyNet"s signed attestion header, and returns it in PEM format.
+* Extracts the certificate from SafetyNet's signed attestion header, and returns it in PEM format.
 *
-* @param JSON $headerJWS SafetyNet"s signed attestion header
+* @param JSON $headerJWS SafetyNet's signed attestion header
 *
 * @return Certificate in PEM format
 */
@@ -131,12 +134,12 @@ function getCertificateInPemFormat($headerJWS)
 }
  
 /**
-* Verifies SafetyNet"s signed attestion certificate by checking whether this certificate"s CA is Google"s root certificate.
+* Verifies SafetyNet's signed attestion certificate by checking whether this certificate"s CA is Google's root certificate.
 *
-* @param PEM $certJWS SafetyNet"s signed attestion certificate in PEM format
+* @param PEM $certJWS SafetyNet's signed attestion certificate in PEM format
 * @param String $googleCertificateFile Path to Google"s root certificate
 *
-* @return Whether the SafetyNet"s attestion certificate is correct
+* @return Whether the SafetyNet's attestion certificate is correct
 */
 function verifyCertificate($certJWS, $googleCertificateFile)
 {
@@ -151,14 +154,14 @@ function verifyCertificate($certJWS, $googleCertificateFile)
 }
  
 /**
-* Verifies SafetyNet"s signed attestion signature.
+* Verifies SafetyNet's signed attestion signature.
 *
-* @param String $headerJWSEncoded SafetyNet"s signed attestion encoded header
-* @param String $payloadEncoded SafetyNet"s signed attestion encoded payload
-* @param String $signature SafetyNet"s signed attestion signature
-* @param PEM $certJWS SafetyNet"s signed attestion certificate in PEM format
+* @param String $headerJWSEncoded SafetyNet's signed attestion encoded header
+* @param String $payloadEncoded SafetyNet's signed attestion encoded payload
+* @param String $signature SafetyNet's signed attestion signature
+* @param PEM $certJWS SafetyNet's signed attestion certificate in PEM format
 *
-* @return Whether SafetyNet"s attestion signature is correct
+* @return Whether SafetyNet's attestion signature is correct
 */
 function verifyJWSSignature($headerJWSEncoded, $payloadEncoded, $signature, $certJWS)
 {
@@ -168,15 +171,15 @@ function verifyJWSSignature($headerJWSEncoded, $payloadEncoded, $signature, $cer
 }
 
 /**
-* Validates SafetyNet"s signed attestion payload by the given expected values. When it did not pass the SafetyNet check, it prints Google's given advice.
+* Validates SafetyNet's signed attestion payload by the given expected values. When it did not pass the SafetyNet check, it prints Google's given advice.
 *
-* @param String $rawJWS SafetyNet"s signed attestion
+* @param String $rawJWS SafetyNet's signed attestion
 * @param String $nonceExpected Expected nonce
 * @param String $APKpackageNameExpected Expected APK package name
 * @param String $APKDigestSha256Expected Expected APK SHA256 digest
 * @param String $APKCertificateDigestSha256Expected Expected APK SHA265 certificate
 *
-* @return Whether SafetyNet"s attestion payload matches the given expected values
+* @return Whether SafetyNet's attestion payload matches the given expected values
 */
 function validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected)
 {
@@ -191,11 +194,11 @@ function validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCerti
 }
  
 /**
-* Gets SafetyNet"s signed attestion payload.
+* Gets SafetyNet's signed attestion payload.
 *
-* @param String $rawJWS SafetyNet"s signed attestion
+* @param String $rawJWS SafetyNet's signed attestion
 *
-* @return SafetyNet"s signed attestion payload in JSON format
+* @return SafetyNet's signed attestion payload in JSON format
 */
 function getJWSPayload($rawJWS)
 {
@@ -219,13 +222,13 @@ function getJWSPayload($rawJWS)
 /**
 * Gets each parameter from the provided SafetyNet's signed attestion payload, and compares it with the given expected value.
 *
-* @param JSON $payloadJWS SafetyNet"s signed attestion payload in JSON format
+* @param JSON $payloadJWS SafetyNet's signed attestion payload in JSON format
 * @param String $nonceExpected Expected nonce
 * @param String $APKpackageNameExpected Expected APK package name
 * @param String $APKDigestSha256Expected Expected APK SHA256 digest
 * @param String $APKCertificateDigestSha256Expected Expected APK SHA265 certificate
 *
-* @return Whether each parameter of the provided SafetyNet"s attestion payload matches the given expected values
+* @return Whether each parameter of the provided SafetyNet's attestion payload matches the given expected values
 */
 function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected)
 {
@@ -271,7 +274,7 @@ function isInputEqualToExpected($input, $expected, $inputName)
 /**
 * Checks whether Google gave an advive in the provided SafetyNet's signed attestion payload. If that is the case, this function prints it.
 *
-* @param JSON $payloadJWS SafetyNet"s signed attestion payload in JSON format
+* @param JSON $payloadJWS SafetyNet's signed attestion payload in JSON format
 */
 function printAdvice($payloadJWS)
 {
