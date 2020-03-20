@@ -32,9 +32,9 @@ elseif (0 === strpos($request, "/api/validatejws"))
         $isJWSPayloadValid = validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected);
         //Final result
         if ($isJWSSignatureValid === true && $isJWSPayloadValid === true) {
-            echo "Succes: Android Safetynet check passed.";
+            echo "Android Safetynet Attestation check passed.";
         } else {
-            echo "Error: Android Safetynet check failed.";
+            echo "Android Safetynet Attestation check failed.";
         }
     }
 // Invalid request
