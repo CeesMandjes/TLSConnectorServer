@@ -9,5 +9,5 @@ Configuration:
 - Set package name of Android application in '$APKpackageNameExpected'.
 - Set certificate hash which signed the APK of the Android application in '$APKCertificateDigestSha256Expected'.
 <br/>
-NOTE: A client implementation (Android application) for the SafetyNet Attestation check is required. See: https://gitlab.local.northwave.nl/cmandjes/tlsconnector
+NOTE: A client implementation (Android application) for the SafetyNet Attestation check is required. See: https://github.com/CeesMandjes/TLSConnector
 <br/><br/>
