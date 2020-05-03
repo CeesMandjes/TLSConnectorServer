@@ -21,6 +21,8 @@ $googleCertificateFile = "GoogleCertificate.pem";
 // Expected parameters value for application for SafetyNet validation
 $APKpackageNameExpected = "com.example.tlsconnector";
 $APKCertificateDigestSha256Expected = "11a4fc5754ded4c10144a02b974998c9b5da7c0b1d06220517b6f78a528d97eb";
+$ctsProfileMatchExpected = "true";
+$basicIntegrityExpected = "true";
  
 // Entry point of the application
 $request = str_replace("/index.php", "", $_SERVER["REQUEST_URI"]);
@@ -44,7 +46,7 @@ elseif (0 === strpos($request, "/api/validatejws"))
         // Verify the signature of the provided attestation
         $isJWSSignatureValid = verifyJWSIntegrity($rawJWS, $googleCertificateFile);
         // Validate the payload of the provided attestion
-        $isJWSPayloadValid = validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected);
+        $isJWSPayloadValid = validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected, $ctsProfileMatchExpected, $basicIntegrityExpected);
         //Final result
         if ($isJWSSignatureValid === true && $isJWSPayloadValid === true) 
         {
@@ -196,10 +198,10 @@ function verifyJWSSignature($headerJWSEncoded, $payloadEncoded, $signature, $cer
 *
 * @return Whether SafetyNet's attestion payload matches the given expected values
 */
-function validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected)
+function validateJWS($rawJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected, $ctsProfileMatchExpected, $basicIntegrityExpected)
 {
     $payload = getJWSPayload($rawJWS);
-    $result = validateJWSPayload($payload, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected);
+    $result = validateJWSPayload($payload, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected, $ctsProfileMatchExpected, $basicIntegrityExpected);
     //When it did not pass the SafetyNet check, it prints Google's given advice
     if($result === false)
     {
@@ -245,7 +247,7 @@ function getJWSPayload($rawJWS)
 *
 * @return Whether each parameter of the provided SafetyNet's attestion payload matches the given expected values
 */
-function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected)
+function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected, $APKCertificateDigestSha256Expected, $ctsProfileMatchExpected, $basicIntegrityExpected)
 {
     $nonceReceived = base64_decode($payloadJWS["nonce"]);
     $APKpackageNameRecieved = $payloadJWS["apkPackageName"];
@@ -256,8 +258,8 @@ function validateJWSPayload($payloadJWS, $nonceExpected, $APKpackageNameExpected
     $nonceIsValid = isInputEqualToExpected($nonceReceived, $nonceExpected, "nonce");
     $APKpackageNameIsValid = isInputEqualToExpected($APKpackageNameRecieved, $APKpackageNameExpected, "APK package name");
     $APKCertificateDigestSha256IsValid = isInputEqualToExpected($APKCertificateDigestSha256Received, $APKCertificateDigestSha256Expected, "APK certificate digest Sha256");
-    $ctsProfileMatchIsValid = isInputEqualToExpected($ctsProfileMatchReceieved, "true", "ctsProfileMatch");
-    $basicIntegrityIsValid = isInputEqualToExpected($basicIntegrityReceived, "true", "basicIntegrity"); 
+    $ctsProfileMatchIsValid = isInputEqualToExpected($ctsProfileMatchReceieved, $ctsProfileMatchExpected, "ctsProfileMatch");
+    $basicIntegrityIsValid = isInputEqualToExpected($basicIntegrityReceived, $basicIntegrityExpected, "basicIntegrity"); 
     //Check whether it passess the SafetyNet check
     if ($nonceIsValid === true && $APKpackageNameIsValid === true && $APKCertificateDigestSha256IsValid === true &&
         $ctsProfileMatchIsValid === true && $basicIntegrityIsValid === true)
